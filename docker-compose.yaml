@@ -1,0 +1,11 @@
+version: "3.1"
+services:
+  postgres:
+    image: "postgres"
+    restart: "always"
+    environment:
+      POSTGRES_PASSWORD: photon
+      POSTGRES_USER: photon
+      POSTGRES_DB: photon
+    ports:
+      - 3333:5432
