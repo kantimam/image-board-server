@@ -5,4 +5,6 @@ import (
 )
 
 // DBConn shared reference to the database
-var DBConn *gorm.DB
+var (
+	DBConn *gorm.DB
+)

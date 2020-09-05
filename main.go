@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"server/database"
+	"server/models/post"
 
 	"github.com/gofiber/fiber"
 	"github.com/kelseyhightower/envconfig"
@@ -27,6 +28,8 @@ func initDB() {
 		panic("failed to connect to database")
 	}
 	fmt.Println("successfully connected to database")
+
+	database.DBConn.AutoMigrate(&post.Post{})
 }
 
 func main() {
@@ -38,30 +41,61 @@ func main() {
 	}
 	// create db connection
 	initDB()
+	//defer database.DBConn.Close()
 	// setup fiber app
 	app := fiber.New()
 
 	app.Static("/static", "./static")
 
-	app.Get("/getepisodes", func(c *fiber.Ctx) {
-
+	app.Get("/posts", func(c *fiber.Ctx) {
+		posts := post.GetPosts()
+		c.Send(posts)
 	})
 
-	app.Get("/search", func(c *fiber.Ctx) {
-		c.Status(201).JSON(fiber.Map{
-			"test":  "passed",
-			"hello": "world",
-		})
-	})
+	/* app.Post("/post", func(c *fiber.Ctx) {
+		post := post.CreatePost(c)
+		c.Send(post)
+	}) */
 
-	app.Get("/getstream", func(c *fiber.Ctx) {
-		videoID := c.Query("id")
+	app.Post("/post", func(c *fiber.Ctx) {
+		// Parse the multipart form:
+		if form, err := c.MultipartForm(); err == nil {
+			// => *multipart.Form
 
-		if videoID == "" {
-			c.Send(`please provide a valid id`)
-			return
+			// Get all files from "documents" key:
+			files := form.File["documents"]
+			if len(files) < 1 {
+				c.Status(500).Send("a file as required")
+				return
+			}
+			// => []*multipart.FileHeader
+			storedFiles := ""
+			// Loop through files:
+			for _, file := range files {
+				fmt.Println(file.Filename, file.Size, file.Header["Content-Type"][0])
+
+				// Save the files to disk:
+				err := c.SaveFile(file, fmt.Sprintf("./%s", file.Filename))
+
+				if err != nil {
+					c.Status(500).Send("failed to store your file")
+					return
+				}
+				storedFiles = file.Filename
+			}
+
+			// handle text fields
+			var myPost post.Post
+			myPost.Title = form.Value["title"][0]
+			myPost.Author = form.Value["author"][0]
+			myPost.Type = "image"
+			myPost.ResourceName = storedFiles
+
+			createdPost := post.CreatePost(myPost)
+			c.Send(createdPost)
+		} else {
+			c.Status(500).Send("failed to parse the submitted form")
 		}
-		c.Send("success")
 	})
 
 	port := os.Getenv("SERVER_PORT")
