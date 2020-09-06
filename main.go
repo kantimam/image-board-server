@@ -6,6 +6,7 @@ import (
 	"os"
 	"server/database"
 	"server/models/post"
+	"server/routes"
 
 	"github.com/gofiber/fiber"
 	"github.com/kelseyhightower/envconfig"
@@ -32,6 +33,11 @@ func initDB() {
 	database.DBConn.AutoMigrate(&post.Post{})
 }
 
+/* func StoreImages(files []*multipart.FileHeader) []string {
+	var filePathsArray []string
+
+} */
+
 func main() {
 	// setup settings from env vars and default values
 	var s Settings
@@ -42,62 +48,14 @@ func main() {
 	// create db connection
 	initDB()
 	//defer database.DBConn.Close()
-	// setup fiber app
+	// create fiber app
 	app := fiber.New()
-
+	// setupt middlewares
 	app.Static("/static", "./static")
+	// setup routes
+	routes.CreateRoutes(app)
 
-	app.Get("/posts", func(c *fiber.Ctx) {
-		posts := post.GetPosts()
-		c.Send(posts)
-	})
-
-	/* app.Post("/post", func(c *fiber.Ctx) {
-		post := post.CreatePost(c)
-		c.Send(post)
-	}) */
-
-	app.Post("/post", func(c *fiber.Ctx) {
-		// Parse the multipart form:
-		if form, err := c.MultipartForm(); err == nil {
-			// => *multipart.Form
-
-			// Get all files from "documents" key:
-			files := form.File["documents"]
-			if len(files) < 1 {
-				c.Status(500).Send("a file as required")
-				return
-			}
-			// => []*multipart.FileHeader
-			storedFiles := ""
-			// Loop through files:
-			for _, file := range files {
-				fmt.Println(file.Filename, file.Size, file.Header["Content-Type"][0])
-
-				// Save the files to disk:
-				err := c.SaveFile(file, fmt.Sprintf("./%s", file.Filename))
-
-				if err != nil {
-					c.Status(500).Send("failed to store your file")
-					return
-				}
-				storedFiles = file.Filename
-			}
-
-			// handle text fields
-			var myPost post.Post
-			myPost.Title = form.Value["title"][0]
-			myPost.Author = form.Value["author"][0]
-			myPost.Type = "image"
-			myPost.ResourceName = storedFiles
-
-			createdPost := post.CreatePost(myPost)
-			c.Send(createdPost)
-		} else {
-			c.Status(500).Send("failed to parse the submitted form")
-		}
-	})
-
+	// start listening for requests
 	port := os.Getenv("SERVER_PORT")
 	if port == "" {
 		port = "5600"
