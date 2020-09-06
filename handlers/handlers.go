@@ -14,9 +14,9 @@ func CreatePost(c *fiber.Ctx) {
 		// => *multipart.Form
 
 		// Get all files from "documents" key:
-		files := form.File["documents"]
+		files := form.File["files"]
 		if len(files) < 1 {
-			c.Status(500).Send("a file as required")
+			c.Status(500).Send("a file is required")
 			return
 		}
 		// => []*multipart.FileHeader
@@ -26,7 +26,7 @@ func CreatePost(c *fiber.Ctx) {
 			fmt.Println(file.Filename, file.Size, file.Header["Content-Type"][0])
 
 			// Save the files to disk:
-			err := c.SaveFile(file, fmt.Sprintf("./%s", file.Filename))
+			err := c.SaveFile(file, fmt.Sprintf("./static/%s", file.Filename))
 
 			if err != nil {
 				c.Status(500).Send("failed to store your file")
@@ -37,9 +37,19 @@ func CreatePost(c *fiber.Ctx) {
 
 		// handle text fields
 		var myPost post.Post
-		myPost.Title = form.Value["title"][0]
-		myPost.Author = form.Value["author"][0]
-		myPost.Type = "image"
+		// check if keys exist inside the form
+		title, exists := form.Value["title"]
+		if !exists {
+			c.Status(500).Send("no title found in the submitted form")
+			return
+		}
+		/* author, exists := form.Value["author"]
+		if !exists {
+			c.Status(500).Send("no author found in the submitted form")
+			return
+		} */
+		myPost.Title = title[0]
+		myPost.Author = "kantemir"
 		myPost.ResourceName = storedFiles
 
 		createdPost := post.CreatePost(myPost)

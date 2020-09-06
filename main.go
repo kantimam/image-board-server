@@ -8,6 +8,7 @@ import (
 	"server/models/post"
 	"server/routes"
 
+	"github.com/gofiber/cors"
 	"github.com/gofiber/fiber"
 	"github.com/kelseyhightower/envconfig"
 	"gorm.io/driver/postgres"
@@ -52,6 +53,7 @@ func main() {
 	app := fiber.New()
 	// setupt middlewares
 	app.Static("/static", "./static")
+	app.Use(cors.New(cors.Config{AllowOrigins: []string{"*"}}))
 	// setup routes
 	routes.CreateRoutes(app)
 

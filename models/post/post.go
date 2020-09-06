@@ -12,13 +12,20 @@ type Post struct {
 	Title        string `json:"title"`
 	Author       string `json:"author"`
 	ResourceName string `json:"resourceName"`
-	Type         string `json:"type"`
+}
+
+// Preview is a simpler version of Post used to display a preview in a list
+type Preview struct {
+	ID           uint   `json:"id"`
+	Title        string `json:"title"`
+	ResourceName string `json:"resourceName"`
 }
 
 // GetPosts returns all posts from database
-func GetPosts() []Post {
-	var posts []Post
-	database.DBConn.Find(&posts)
+func GetPosts() []Preview {
+	//database.DBConn.Exec("DELETE from posts")
+	var posts []Preview
+	database.DBConn.Model(&Post{}).Find(&posts)
 	return posts
 }
 
