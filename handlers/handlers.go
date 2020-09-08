@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"server/models/post"
+	"server/models/user"
 
 	"github.com/gofiber/fiber"
 )
@@ -63,4 +64,19 @@ func CreatePost(c *fiber.Ctx) {
 func GetPosts(c *fiber.Ctx) {
 	posts := post.GetPosts()
 	c.JSON(posts)
+}
+
+func CreateUser(c *fiber.Ctx) {
+	currentUser := new(user.User)
+	/* currentUser.Name = "kantemir"
+	currentUser.Password = "kantemir"
+	currentUser.Type = 5 */
+	if err := c.BodyParser(currentUser); err != nil {
+		c.Status(500).Send(err)
+		return
+	}
+	createdUser := user.CreateUser(*currentUser)
+
+	c.JSON(createdUser)
+
 }

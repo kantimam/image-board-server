@@ -6,6 +6,7 @@ import (
 	"os"
 	"server/database"
 	"server/models/post"
+	"server/models/user"
 	"server/routes"
 
 	"github.com/gofiber/cors"
@@ -31,7 +32,7 @@ func initDB() {
 	}
 	fmt.Println("successfully connected to database")
 
-	database.DBConn.AutoMigrate(&post.Post{})
+	database.DBConn.AutoMigrate(&post.Post{}, &user.User{})
 }
 
 /* func StoreImages(files []*multipart.FileHeader) []string {
