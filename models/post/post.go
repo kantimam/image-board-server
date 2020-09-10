@@ -29,6 +29,24 @@ func GetPosts() []Preview {
 	return posts
 }
 
+/* func GetPost(condition Post) (Post, error) {
+	var post Post
+	response := database.DBConn.Find(condition)
+	if response.Error != nil {
+		return post, response.Error
+	}
+	return post, nil
+} */
+
+// GetPostByID trys to get a single post with a certain id from the database
+func GetPostByID(id string) (Post, error) {
+	var post Post
+	if err := database.DBConn.First(&post, id).Error; err != nil {
+		return post, err
+	}
+	return post, nil
+}
+
 // CreatePost does what it says :3
 func CreatePost(post Post) Post {
 	// TODO extract data outside of here instead of using the request

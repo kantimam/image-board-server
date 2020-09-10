@@ -66,6 +66,27 @@ func GetPosts(c *fiber.Ctx) {
 	c.JSON(posts)
 }
 
+// GetPostByID gets a single post with the id provided in the params
+func GetPostByID(c *fiber.Ctx) {
+	postID := c.Params("id")
+	if postID == "" {
+		c.Status(404).Send(fiber.Map{
+			"error": "please provided a valid id",
+		})
+		return
+	}
+	post, err := post.GetPostByID(postID)
+	if err != nil {
+		c.Status(404).Send(fiber.Map{
+			"error": "no post found with the provided id",
+		})
+		return
+	}
+	c.JSON(post)
+
+}
+
+// CreateUser creates trys to create a user (most likely used for signup)
 func CreateUser(c *fiber.Ctx) {
 	currentUser := new(user.User)
 	/* currentUser.Name = "kantemir"
@@ -75,8 +96,27 @@ func CreateUser(c *fiber.Ctx) {
 		c.Status(500).Send(err)
 		return
 	}
-	createdUser := user.CreateUser(*currentUser)
+	createdUser, err := user.CreateUser(*currentUser)
+	if err != nil {
+		c.Status(500).Send("failed to create user")
+	} else {
+		c.JSON(createdUser)
+	}
+}
 
-	c.JSON(createdUser)
+// Login user
+func Login(c *fiber.Ctx) {
+	var currentUser user.LoginCredentials
+
+	if err := c.BodyParser(&currentUser); err != nil {
+		c.Status(500).Send(err)
+		return
+	}
+	foundUser, err := user.GetUserByName(currentUser.Name)
+	if err != nil {
+		c.Status(500).Send("no user found with the given credentials")
+		return
+	}
+	c.JSON(foundUser)
 
 }

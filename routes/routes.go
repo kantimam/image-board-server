@@ -10,6 +10,8 @@ import (
 func CreateRoutes(app *fiber.App) {
 	app.Get("/posts", handlers.GetPosts)
 	app.Post("/post", handlers.CreatePost)
+	app.Get("post/:id", handlers.GetPostByID)
 
-	app.Post("/user", handlers.CreateUser)
+	app.Post("/signup", handlers.CreateUser)
+	app.Post("/login", handlers.Login)
 }
