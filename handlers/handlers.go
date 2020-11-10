@@ -95,6 +95,7 @@ func GetPostPreview(c *fiber.Ctx) {
 	}
 	post, err := post.GetPostPreviewByID(postID)
 	if err != nil {
+		fmt.Println(err)
 		c.Status(404).Send(fiber.Map{
 			"error": "no post found with the provided id",
 		})

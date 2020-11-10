@@ -1,7 +1,10 @@
 package post
 
 import (
+	"errors"
 	"server/database"
+
+	"gorm.io/gorm"
 )
 
 // Post is the data for a single post
@@ -61,10 +64,15 @@ func GetPostByID(id string) (Post, error) {
 func GetPostPreviewByID(id string) (PostPreview, error) {
 	var postPreview PostPreview
 	if err := database.DBConn.Model(&Post{}).Last(&postPreview.PrevPost, "id < ?", id).Error; err != nil {
-		return postPreview, err
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			// if the error is just record not found there is no need panic
+			return postPreview, err
+		}
 	}
 	if err := database.DBConn.Model(&Post{}).First(&postPreview.NextPost, "id > ?", id).Error; err != nil {
-		return postPreview, err
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return postPreview, err
+		}
 	}
 	return postPreview, nil
 }
