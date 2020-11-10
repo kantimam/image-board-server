@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"server/models/post"
 	"server/models/user"
+	"server/util"
 
 	"github.com/gofiber/fiber"
 )
@@ -25,15 +26,17 @@ func CreatePost(c *fiber.Ctx) {
 		// Loop through files:
 		for _, file := range files {
 			fmt.Println(file.Filename, file.Size, file.Header["Content-Type"][0])
-
+			targetFilePath := fmt.Sprintf("./static/%s", file.Filename)
 			// Save the files to disk:
-			err := c.SaveFile(file, fmt.Sprintf("./static/%s", file.Filename))
+			err := c.SaveFile(file, targetFilePath)
 
 			if err != nil {
 				c.Status(500).Send("failed to store your file")
 				return
 			}
 			storedFiles = file.Filename
+			go util.StoreThumbnails(targetFilePath, storedFiles)
+
 		}
 
 		// handle text fields
