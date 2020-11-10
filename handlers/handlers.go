@@ -83,7 +83,24 @@ func GetPostByID(c *fiber.Ctx) {
 		return
 	}
 	c.JSON(post)
+}
 
+func GetPostPreview(c *fiber.Ctx) {
+	postID := c.Params("id")
+	if postID == "" {
+		c.Status(404).Send(fiber.Map{
+			"error": "please provided a valid id",
+		})
+		return
+	}
+	post, err := post.GetPostPreviewByID(postID)
+	if err != nil {
+		c.Status(404).Send(fiber.Map{
+			"error": "no post found with the provided id",
+		})
+		return
+	}
+	c.JSON(post)
 }
 
 // CreateUser creates trys to create a user (most likely used for signup)
