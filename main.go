@@ -9,8 +9,10 @@ import (
 	"server/models/user"
 	"server/routes"
 
-	"github.com/gofiber/cors"
-	"github.com/gofiber/fiber"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+
 	"github.com/kelseyhightower/envconfig"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -35,11 +37,6 @@ func initDB() {
 	database.DBConn.AutoMigrate(&post.Post{}, &user.User{})
 }
 
-/* func StoreImages(files []*multipart.FileHeader) []string {
-	var filePathsArray []string
-
-} */
-
 func main() {
 	// setup settings from env vars and default values
 	var s Settings
@@ -49,12 +46,13 @@ func main() {
 	}
 	// create db connection
 	initDB()
-	//defer database.DBConn.Close()
+
 	// create fiber app
 	app := fiber.New()
 	// setupt middlewares
 	app.Static("/static", "./static")
-	app.Use(cors.New(cors.Config{AllowOrigins: []string{"*"}}))
+	app.Use(cors.New(cors.Config{AllowOrigins: "*"}))
+	app.Use(logger.New())
 	// setup routes
 	routes.CreateRoutes(app)
 
@@ -63,5 +61,5 @@ func main() {
 	if port == "" {
 		port = "5600"
 	}
-	log.Println(app.Listen(port))
+	log.Println(app.Listen(fmt.Sprintf(":%s", port)))
 }

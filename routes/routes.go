@@ -3,7 +3,7 @@ package routes
 import (
 	"server/handlers"
 
-	"github.com/gofiber/fiber"
+	"github.com/gofiber/fiber/v2"
 )
 
 // CreateRoutes adds all the routes to the fiber app
